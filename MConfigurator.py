@@ -12,7 +12,15 @@ program_name = "MidiConfigurator"
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__)) # This is your Project Root
 configuration = parse_config.ConfPacket()
 icon_file = os.path.join(ROOT_DIR, 'icon.png')
-configs = configuration.load_config('FADER, AUX1, AUX2, AUX3, AUX4, AUX5, AUX6, AUX7, AUX8')
+
+configs = configuration.load_config(
+'AUX1 (1-16), AUX1 (17-32), AUX2 (1-16), AUX2 (17-32), AUX3 (1-16), AUX3 (17-32), AUX4 (1-16), AUX4 (17-32), \
+AUX5 (1-16), AUX5 (17-32), AUX6 (1-16), AUX6 (17-32), AUX7 (1-16), AUX7 (17-32), AUX8 (1-16), AUX8 (17-32), \
+BUS1 (1-16), BUS1 (17-32), BUS2 (1-16), BUS2 (17-32), BUS3 (1-16), BUS3 (17-32), BUS4 (1-16), BUS4 (17-32), \
+BUS5 (1-16), BUS5 (17-32), BUS6 (1-16), BUS6 (17-32), BUS7 (1-16), BUS7 (17-32), BUS8 (1-16), BUS8 (17-32), \
+OUTROS'
+)
+
 portascom_description = []
 portascom_name = []
 OUTPUTS = ['']
@@ -24,11 +32,13 @@ def atualiza_portas_com():
     global portascom_name 
     portascom = (list(list_ports.comports()))
     list_ports.comports
-    portascom_description = []
-    portascom_name = []
-    for item in portascom:
-        portascom_description.append(item.description)
-        portascom_name.append(item.name)
+    if len(portascom) != len(portascom_name):
+        portascom_description = []
+        portascom_name = []
+        for item in portascom:
+            portascom_description.append(item.description)
+            portascom_name.append(item.name)
+        return 1
 
 atualiza_portas_com()
 seriais = []
@@ -53,10 +63,10 @@ try:
             linha_titulo.Add(texto_titulo, 0, flag=wx.CENTER, border=0)
             
             linha_labels = wx.BoxSizer(wx.HORIZONTAL)
-            fn1txt = wx.StaticText(self.panel, label="FUNÇÃO 1", size=(190,15), style=wx.ALIGN_CENTRE_HORIZONTAL)
+            fn1txt = wx.StaticText(self.panel, label="GRUPO", size=(190,15), style=wx.ALIGN_CENTRE_HORIZONTAL)
             fn1txt.ForegroundColour = 'White'
             fn1txt.BackgroundColour = 'Black'
-            fn2txt = wx.StaticText(self.panel, label="FUNÇÃO 2", size=(290,15), style=wx.ALIGN_CENTRE_HORIZONTAL)
+            fn2txt = wx.StaticText(self.panel, label="OPERAÇÃO", size=(290,15), style=wx.ALIGN_CENTRE_HORIZONTAL)
             fn2txt.ForegroundColour = 'White'
             fn2txt.BackgroundColour = 'Black'
             linha_labels.Add(fn1txt, flag=wx.CENTER)
@@ -420,6 +430,7 @@ try:
         
         def OnCombo(self, combo_output, combo_funcao):
             try:
+                combo_funcao.Clear()
                 for items in configs[ combo_output.GetStringSelection() ]:
                     combo_funcao.Append(items)
             except:
@@ -514,9 +525,12 @@ try:
 
         def testa_serial(self):
             while 1:
-                atualiza_portas_com()
                 global portascom_name
+                global portascom_description
                 global seriais
+                if (atualiza_portas_com()):
+                    self.porta_com.Clear()
+                    self.porta_com.Append(portascom_description)
                 for ser in seriais:
                     if ( not (ser.name in portascom_name)):  
                         self.desconecta_serial()
