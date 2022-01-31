@@ -1,2 +1,3 @@
 *.specs
-*/*
+__pycache__/
+build/
